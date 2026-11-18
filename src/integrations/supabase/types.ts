@@ -674,6 +674,28 @@ export type Database = {
       }
     }
     Functions: {
+      _create_staff_account: {
+        Args: {
+          _email: string
+          _full_name: string
+          _password: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: string
+      }
+      admin_create_user: {
+        Args: {
+          _email: string
+          _full_name: string
+          _password: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: string
+      }
+      bootstrap_super_admin: {
+        Args: { _email: string; _full_name: string; _password: string }
+        Returns: string
+      }
       create_bank_account: {
         Args: {
           p_ledger: Database["public"]["Enums"]["ledger"]
@@ -883,6 +905,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      setup_status: { Args: never; Returns: boolean }
       update_bank_account: {
         Args: { p_id: string; p_name: string; p_sort_order: number }
         Returns: {

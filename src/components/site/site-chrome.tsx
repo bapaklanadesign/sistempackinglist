@@ -13,7 +13,7 @@ export const siteNavigation = [
 export const wa = whatsappMessageUrl();
 
 /** Fixed site header. `overlay` keeps it transparent over a hero until the visitor scrolls. */
-export function SiteNav({ overlay = true }: { overlay?: boolean }) {
+export function SiteNav({ overlay = true, minimal = false }: { overlay?: boolean; minimal?: boolean }) {
   const [open, setOpen] = useState(false), [scrolled, setScrolled] = useState(false);
   const path = useRouterState({ select: s => s.location.pathname });
   useEffect(() => { setOpen(false); }, [path]);
@@ -32,11 +32,13 @@ export function SiteNav({ overlay = true }: { overlay?: boolean }) {
   }, [open]);
   return <header className={`j-nav ${scrolled || !overlay ? "solid" : ""} ${open ? "open" : ""}`}>
     <Link to="/" className="j-logo" aria-label="CV MR Express — Beranda"><img src={logo.url} alt="" width="34" height="34" /><b>CV MR EXPRESS</b></Link>
-    <nav id="j-links" className="j-links" aria-label="Navigasi utama">
-      {siteNavigation.map(n => <Link key={n.to} to={n.to} onClick={() => setOpen(false)} activeOptions={{ exact: true }} activeProps={{ "aria-current": "page" }}>{n.label}</Link>)}
-    </nav>
-    <a className="j-btn j-btn-sm" href={wa} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-    <button type="button" className="j-burger" aria-label={open ? "Tutup menu" : "Buka menu"} aria-expanded={open} aria-controls="j-links" onClick={() => setOpen(!open)}><i /><i /></button>
+    {!minimal && <>
+      <nav id="j-links" className="j-links" aria-label="Navigasi utama">
+        {siteNavigation.map(n => <Link key={n.to} to={n.to} onClick={() => setOpen(false)} activeOptions={{ exact: true }} activeProps={{ "aria-current": "page" }}>{n.label}</Link>)}
+      </nav>
+      <a className="j-btn j-btn-sm" href={wa} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      <button type="button" className="j-burger" aria-label={open ? "Tutup menu" : "Buka menu"} aria-expanded={open} aria-controls="j-links" onClick={() => setOpen(!open)}><i /><i /></button>
+    </>}
   </header>;
 }
 

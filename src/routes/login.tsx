@@ -31,7 +31,7 @@ export const Route = createFileRoute("/login")({
 export function AuthShell({ children, showBackground = true }: { children: React.ReactNode; showBackground?: boolean }) {
   return (
     <div className="journey-site site-page">
-      <SiteNav overlay={false} />
+      <SiteNav overlay={false} minimal />
       <main className="s-auth">
         {showBackground && <img src={kapal} alt="" width={1808} height={1200} />}
         <div className="s-auth-card">

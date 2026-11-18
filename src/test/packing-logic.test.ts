@@ -10,8 +10,8 @@ describe("Packing List rules", () => {
     expect(PL_STATUSES.map((s) => plStatusLabel[s])).toEqual(["Draft", "Siap Dimuat", "Dimuat", "Berlayar", "Tiba", "Selesai", "Dibatalkan"]);
   });
   it("lets every role edit but only Super Admin delete", () => {
-    expect([canEditPl("super_admin"), canEditPl("admin1"), canEditPl("admin2")]).toEqual([true, true, true]);
-    expect([canDeletePl("super_admin"), canDeletePl("admin1"), canDeletePl("admin2"), canDeletePl(null)]).toEqual([true, false, false, false]);
+    expect([canEditPl("super_admin"), canEditPl("admin_packing"), canEditPl("admin1"), canEditPl("admin2")]).toEqual([true, true, false, false]);
+    expect([canDeletePl("super_admin"), canDeletePl("admin_packing"), canDeletePl("admin1"), canDeletePl(null)]).toEqual([true, false, false, false]);
   });
   it("calculates volume from dimensions before a manual volume", () => {
     expect(itemVolume(10, 50, 40, 30, 9)).toBe(0.6);

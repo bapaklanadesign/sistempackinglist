@@ -1,0 +1,1 @@
+drop index if exists public.user_roles_one_role_per_user;

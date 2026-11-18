@@ -11,7 +11,7 @@ const actor = "00000000-0000-0000-0000-0000000000a1";
 const ids = { shipper: "00000000-0000-0000-0000-000000000101", consignee: "00000000-0000-0000-0000-000000000102", vessel: "00000000-0000-0000-0000-000000000103" };
 
 /** Acts as a signed-in user with the given role, subject to row level security like the Data API. */
-async function as(role: "super_admin" | "admin1" | "admin2" | "none") {
+async function as(role: "super_admin" | "admin1" | "admin2" | "admin_packing" | "none") {
   await db.exec("reset role");
   await db.query("select set_config('test.actor', $1, false), set_config('test.role', $2, false)", [actor, role === "none" ? "" : role]);
   await db.exec("set role authenticated");
@@ -38,7 +38,7 @@ describe("Packing List database rules", () => {
   });
   afterAll(async () => { await db.close(); });
 
-  it.each(["super_admin", "admin1", "admin2"] as const)("lets %s create a Packing List with correct totals", async (role) => {
+  it.each(["super_admin", "admin_packing"] as const)("lets %s create a Packing List with correct totals", async (role) => {
     await as(role);
     const pl = await save();
     expect(pl.pl_number).toMatch(/^PL-202611-\d{5}$/);
@@ -53,8 +53,17 @@ describe("Packing List database rules", () => {
     await expect(save()).rejects.toThrow("Tidak memiliki akses Packing List");
   });
 
-  it("lets admins edit: saving again replaces the items and logs an update", async () => {
-    await as("admin1");
+  it.each(["admin1", "admin2"] as const)("keeps Admin Laporan %s out of Packing List data", async (role) => {
+    await as("admin_packing");
+    await save();
+    await as(role);
+    await expect(save()).rejects.toThrow("Tidak memiliki akses Packing List");
+    for (const t of ["pl_packing_lists", "pl_items", "pl_parties", "pl_vessels", "pl_status_history", "pl_activity_logs"]) expect(await count(t)).toBe(0);
+    await expect(db.exec("insert into pl_ports(name) values ('Makassar')")).rejects.toThrow(/row-level security/);
+  });
+
+  it("lets Admin Packing List edit: saving again replaces the items and logs an update", async () => {
+    await as("admin_packing");
     const pl = await save();
     const edited = await save(pl.id, header({ voyage_no: "13" }), [items[0]]);
     expect([edited.pl_number, edited.item_count, Number(edited.total_koli)]).toEqual([pl.pl_number, 1, 10]);
@@ -63,7 +72,7 @@ describe("Packing List database rules", () => {
   });
 
   it("stores status changes with history and requires a reason to cancel", async () => {
-    await as("admin2");
+    await as("admin_packing");
     const pl = await save();
     await db.query("select set_packing_list_status($1, 'siap_dimuat', 'Barang lengkap')", [pl.id]);
     await expect(db.query("select set_packing_list_status($1, 'dibatalkan', 'no')", [pl.id])).rejects.toThrow("Alasan pembatalan wajib diisi");
@@ -72,16 +81,16 @@ describe("Packing List database rules", () => {
     expect(await count("pl_activity_logs where action = 'status'")).toBe(1);
   });
 
-  it.each(["admin1", "admin2"] as const)("blocks %s from deleting Packing Lists, contacts, ships and ports", async (role) => {
-    await as(role);
+  it("blocks Admin Packing List from deleting Packing Lists, contacts, ships and ports", async () => {
+    await as("admin_packing");
     await save();
     for (const t of ["pl_packing_lists", "pl_vessels", "pl_parties", "pl_ports"]) await db.exec(`delete from ${t}`);
     await db.exec("reset role");
     expect([await count("pl_packing_lists"), await count("pl_items"), await count("pl_vessels"), await count("pl_parties")]).toEqual([1, 2, 1, 2]);
   });
 
-  it.each(["admin1", "admin2"] as const)("still lets %s add and edit contacts, ships and ports", async (role) => {
-    await as(role);
+  it("lets Admin Packing List add and edit contacts, ships and ports", async () => {
+    await as("admin_packing");
     await db.exec("insert into pl_ports(name, city) values ('Tanjung Perak', 'Surabaya')");
     await db.query("update pl_vessels set operator = 'PELNI' where id = $1", [ids.vessel]);
     await db.exec("reset role");
@@ -89,7 +98,7 @@ describe("Packing List database rules", () => {
   });
 
   it("lets only Super Admin delete, removing items and logging the deletion", async () => {
-    await as("admin1");
+    await as("admin_packing");
     const pl = await save();
     await as("super_admin");
     const del = await db.query("delete from pl_packing_lists where id = $1 returning id", [pl.id]);

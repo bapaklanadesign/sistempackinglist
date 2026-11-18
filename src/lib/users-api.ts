@@ -3,7 +3,7 @@
 // (Super Admin only, one-time setup, one Admin 1/Admin 2 account) run in the database.
 import { supabase } from "@/integrations/supabase/client";
 
-export type NewUserRole = "super_admin" | "admin1" | "admin2";
+export type NewUserRole = "super_admin" | "admin1" | "admin2" | "admin_packing";
 export type NewUser = { email: string; password: string; fullName: string; role: NewUserRole };
 
 /** Same rules the database enforces; checked first so the form answers instantly. */
@@ -16,7 +16,7 @@ export function validateNewUser(d: unknown): NewUser {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) throw new Error("Email tidak valid");
   if (password.length < 10 || password.length > 72) throw new Error("Password minimal 10 karakter");
   if (!fullName) throw new Error("Nama wajib diisi");
-  if (!["super_admin", "admin1", "admin2"].includes(role)) throw new Error("Peran tidak valid");
+  if (!["super_admin", "admin1", "admin2", "admin_packing"].includes(role)) throw new Error("Peran tidak valid");
   return { email, password, fullName, role };
 }
 
@@ -45,4 +45,33 @@ export async function bootstrapSuperAdmin(input: Omit<NewUser, "role">) {
   });
   if (error) throw new Error(error.message);
   return { id: data as string };
+}
+
+export type ManagedUser = { id: string; email: string; full_name: string; role: NewUserRole | null; active: boolean; last_sign_in_at: string | null; created_at: string };
+
+/** Super Admin: every account with role and active status. */
+export async function listUsers(): Promise<ManagedUser[]> {
+  const { data, error } = await supabase.rpc("admin_list_users");
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ManagedUser[];
+}
+
+/** Super Admin: change name, email and role (own role cannot be changed). */
+export async function updateUser(id: string, input: { fullName: string; email: string; role: NewUserRole }) {
+  const u = validateNewUser({ ...input, password: "x".repeat(10) });
+  const { error } = await supabase.rpc("admin_update_user", { _user_id: id, _full_name: u.fullName, _email: u.email, _role: u.role });
+  if (error) throw new Error(error.message);
+}
+
+/** Super Admin: deactivate (blocks sign-in, ends sessions) or reactivate an account. */
+export async function setUserActive(id: string, active: boolean) {
+  const { error } = await supabase.rpc("admin_set_user_active", { _user_id: id, _active: active });
+  if (error) throw new Error(error.message);
+}
+
+/** Super Admin: set a new password for an account. */
+export async function resetUserPassword(id: string, password: string) {
+  if (password.length < 10 || password.length > 72) throw new Error("Password minimal 10 karakter");
+  const { error } = await supabase.rpc("admin_reset_password", { _user_id: id, _password: password });
+  if (error) throw new Error(error.message);
 }

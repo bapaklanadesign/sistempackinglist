@@ -17,7 +17,7 @@ export const unitLabel: Record<string, string> = { koli: "Koli", kardus: "Kardus
 
 /** Only Super Admin may delete Packing List data; all staff can view, create and edit. */
 export const canDeletePl = (role: Role | null | undefined) => role === "super_admin";
-export const canEditPl = (role: Role | null | undefined) => role === "super_admin" || role === "admin1" || role === "admin2";
+export const canEditPl = (role: Role | null | undefined) => role === "super_admin" || role === "admin_packing";
 
 const pos = (n: number | null | undefined) => (n != null && Number.isFinite(n) && n > 0 ? n : 0);
 const round = (n: number, d: number) => Math.round(n * 10 ** d) / 10 ** d;

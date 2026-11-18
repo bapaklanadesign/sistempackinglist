@@ -32,13 +32,13 @@ function Page() {
   const accounts = useQuery(accountsQ());
   const acc = (id: string) => {
     const account = accounts.data?.find((a) => a.id === id);
-    return account ? `${account.name} · ${account.ledger === "admin1" ? "Admin 1" : "Admin 2"}` : "Rekening tidak tersedia";
+    return account ? `${account.name} · ${account.ledger === "admin1" ? "Admin Laporan 1" : "Admin Laporan 2"}` : "Rekening tidak tersedia";
   };
   const records = q.data?.rows.map((r) => {
     const person = people.data?.find((p) => p.id === r.actor_id);
     return { ...r, person: person?.full_name?.trim() || person?.email || "Nama pengguna tidak tersedia", email: person?.full_name?.trim() ? person.email : null,
       activity: auditActivity[r.action] ?? "Aktivitas pembukuan", time: auditTime(r.created_at),
-      ledgerLabel: r.ledger === "admin1" ? "Admin 1" : r.ledger === "admin2" ? "Admin 2" : "Umum",
+      ledgerLabel: r.ledger === "admin1" ? "Admin Laporan 1" : r.ledger === "admin2" ? "Admin Laporan 2" : "Umum",
       changes: auditChanges(r.before_data, r.after_data, acc), context: auditContext(r.before_data, r.after_data) };
   });
   return (

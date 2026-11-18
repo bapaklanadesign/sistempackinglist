@@ -21,6 +21,8 @@ import { Route as AppAuditRouteImport } from './routes/_app.audit'
 import { Route as AppBarangRouteImport } from './routes/_app.barang'
 import { Route as AppCetakPdfRouteImport } from './routes/_app.cetak-pdf'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppDashboardPackingRouteImport } from './routes/_app.dashboard-packing'
+import { Route as AppDashboardPembukuanRouteImport } from './routes/_app.dashboard-pembukuan'
 import { Route as AppImportRouteImport } from './routes/_app.import'
 import { Route as AppKapalPelabuhanRouteImport } from './routes/_app.kapal-pelabuhan'
 import { Route as AppLaporanRouteImport } from './routes/_app.laporan'
@@ -95,6 +97,16 @@ const AppCetakPdfRoute = AppCetakPdfRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardPackingRoute = AppDashboardPackingRouteImport.update({
+  id: '/dashboard-packing',
+  path: '/dashboard-packing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardPembukuanRoute = AppDashboardPembukuanRouteImport.update({
+  id: '/dashboard-pembukuan',
+  path: '/dashboard-pembukuan',
   getParentRoute: () => AppRoute,
 } as any)
 const AppImportRoute = AppImportRouteImport.update({
@@ -190,6 +202,8 @@ export interface FileRoutesByFullPath {
   '/barang': typeof AppBarangRoute
   '/cetak-pdf': typeof AppCetakPdfRoute
   '/dashboard': typeof AppDashboardRoute
+  '/dashboard-packing': typeof AppDashboardPackingRoute
+  '/dashboard-pembukuan': typeof AppDashboardPembukuanRoute
   '/import': typeof AppImportRoute
   '/kapal-pelabuhan': typeof AppKapalPelabuhanRoute
   '/laporan': typeof AppLaporanRoute
@@ -219,6 +233,8 @@ export interface FileRoutesByTo {
   '/barang': typeof AppBarangRoute
   '/cetak-pdf': typeof AppCetakPdfRoute
   '/dashboard': typeof AppDashboardRoute
+  '/dashboard-packing': typeof AppDashboardPackingRoute
+  '/dashboard-pembukuan': typeof AppDashboardPembukuanRoute
   '/import': typeof AppImportRoute
   '/kapal-pelabuhan': typeof AppKapalPelabuhanRoute
   '/laporan': typeof AppLaporanRoute
@@ -250,6 +266,8 @@ export interface FileRoutesById {
   '/_app/barang': typeof AppBarangRoute
   '/_app/cetak-pdf': typeof AppCetakPdfRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/dashboard-packing': typeof AppDashboardPackingRoute
+  '/_app/dashboard-pembukuan': typeof AppDashboardPembukuanRoute
   '/_app/import': typeof AppImportRoute
   '/_app/kapal-pelabuhan': typeof AppKapalPelabuhanRoute
   '/_app/laporan': typeof AppLaporanRoute
@@ -281,6 +299,8 @@ export interface FileRouteTypes {
     | '/barang'
     | '/cetak-pdf'
     | '/dashboard'
+    | '/dashboard-packing'
+    | '/dashboard-pembukuan'
     | '/import'
     | '/kapal-pelabuhan'
     | '/laporan'
@@ -310,6 +330,8 @@ export interface FileRouteTypes {
     | '/barang'
     | '/cetak-pdf'
     | '/dashboard'
+    | '/dashboard-packing'
+    | '/dashboard-pembukuan'
     | '/import'
     | '/kapal-pelabuhan'
     | '/laporan'
@@ -340,6 +362,8 @@ export interface FileRouteTypes {
     | '/_app/barang'
     | '/_app/cetak-pdf'
     | '/_app/dashboard'
+    | '/_app/dashboard-packing'
+    | '/_app/dashboard-pembukuan'
     | '/_app/import'
     | '/_app/kapal-pelabuhan'
     | '/_app/laporan'
@@ -453,6 +477,20 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard-packing': {
+      id: '/_app/dashboard-packing'
+      path: '/dashboard-packing'
+      fullPath: '/dashboard-packing'
+      preLoaderRoute: typeof AppDashboardPackingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard-pembukuan': {
+      id: '/_app/dashboard-pembukuan'
+      path: '/dashboard-pembukuan'
+      fullPath: '/dashboard-pembukuan'
+      preLoaderRoute: typeof AppDashboardPembukuanRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/import': {
@@ -575,6 +613,8 @@ interface AppRouteChildren {
   AppBarangRoute: typeof AppBarangRoute
   AppCetakPdfRoute: typeof AppCetakPdfRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppDashboardPackingRoute: typeof AppDashboardPackingRoute
+  AppDashboardPembukuanRoute: typeof AppDashboardPembukuanRoute
   AppImportRoute: typeof AppImportRoute
   AppKapalPelabuhanRoute: typeof AppKapalPelabuhanRoute
   AppLaporanRoute: typeof AppLaporanRoute
@@ -598,6 +638,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppBarangRoute: AppBarangRoute,
   AppCetakPdfRoute: AppCetakPdfRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppDashboardPackingRoute: AppDashboardPackingRoute,
+  AppDashboardPembukuanRoute: AppDashboardPembukuanRoute,
   AppImportRoute: AppImportRoute,
   AppKapalPelabuhanRoute: AppKapalPelabuhanRoute,
   AppLaporanRoute: AppLaporanRoute,

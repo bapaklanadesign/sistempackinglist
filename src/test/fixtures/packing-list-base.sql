@@ -2,11 +2,12 @@
 -- Supabase-provided pieces (auth.uid, roles, has_role, is_staff) are replaced with test stubs driven by test.actor / test.role.
 create role anon; create role authenticated; create schema auth;
 create publication supabase_realtime;
-create type app_role as enum ('super_admin', 'admin1', 'admin2');
+create type app_role as enum ('super_admin', 'admin1', 'admin2', 'admin_packing');
 create type pl_status as enum ('draft','siap_dimuat','dimuat','berlayar','tiba','selesai','dibatalkan');
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('test.actor', true), '')::uuid $$;
 create function public.has_role(_user_id uuid, _role app_role) returns boolean language sql stable as $$ select _user_id is not null and current_setting('test.role', true) = _role::text $$;
-create function public.is_staff() returns boolean language sql stable as $$ select coalesce(current_setting('test.role', true), '') in ('super_admin','admin1','admin2') $$;
+-- Mirrors live is_staff(): Packing List access is Super Admin + Admin Packing List only.
+create function public.is_staff() returns boolean language sql stable as $$ select coalesce(current_setting('test.role', true), '') in ('super_admin','admin_packing') $$;
 create table public.profiles (id uuid primary key, full_name text not null default '', email text not null default '');
 
 create table public.pl_parties (id uuid primary key default gen_random_uuid(), kind text not null check (kind in ('pengirim','penerima')), name text not null check (char_length(trim(name)) between 1 and 120),

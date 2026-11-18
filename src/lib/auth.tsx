@@ -3,9 +3,10 @@ import type { Session } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Role = "super_admin" | "admin1" | "admin2";
+export type Role = "super_admin" | "admin1" | "admin2" | "admin_packing";
 export type Ledger = "admin1" | "admin2";
-export const roleLabel: Record<Role, string> = { super_admin: "Super Admin", admin1: "Admin 1", admin2: "Admin 2" };
+export const roleLabel: Record<Role, string> = { super_admin: "Super Admin", admin1: "Admin Laporan 1", admin2: "Admin Laporan 2", admin_packing: "Admin Packing List" };
+export const ROLES: Role[] = ["super_admin", "admin1", "admin2", "admin_packing"];
 
 type AuthState = {
   ready: boolean;
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<Role | null>(null);
   const [roleError, setRoleError] = useState<string | null>(null);
   const [fullName, setFullName] = useState("");
+  const [loadedUid, setLoadedUid] = useState<string | null>(null);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
@@ -42,14 +44,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Defer to avoid calling Supabase inside the auth callback.
     const t = setTimeout(async () => {
       const [r, p] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", uid).maybeSingle(),
+        supabase.from("user_roles").select("role, disabled_at").eq("user_id", uid).maybeSingle(),
         supabase.from("profiles").select("full_name").eq("id", uid).maybeSingle(),
       ]);
       if (r.error) setRoleError(r.error.message);
       else if (!r.data) setRoleError("Akun ini belum memiliki peran. Hubungi Super Admin.");
+      else if (r.data.disabled_at) setRoleError("Akun ini dinonaktifkan. Hubungi Super Admin.");
       else setRoleError(null);
-      setRole((r.data?.role as Role) ?? null);
+      setRole(r.data && !r.data.disabled_at ? (r.data.role as Role) : null);
       setFullName(p.data?.full_name ?? "");
+      setLoadedUid(uid);
       setReady(true);
     }, 0);
     return () => clearTimeout(t);
@@ -61,7 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
-  return <Ctx.Provider value={{ ready, session, role, roleError, fullName, signOut }}>{children}</Ctx.Provider>;
+  // Not ready until the role of the current session has loaded, so redirects never use a stale role.
+  const settled = ready && (!uid || loadedUid === uid);
+  return <Ctx.Provider value={{ ready: settled, session, role: settled ? role : null, roleError, fullName, signOut }}>{children}</Ctx.Provider>;
 }
 
 export function useAuth() {

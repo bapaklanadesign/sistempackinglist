@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { homeFor } from "@/lib/access";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -50,20 +51,21 @@ export function AuthShell({ children, showBackground = true }: { children: React
 
 function Login() {
   const nav = useNavigate();
-  const { session } = useAuth();
+  const { session, ready, role } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { if (session) nav({ to: "/dashboard", replace: true }); }, [session, nav]);
+  // Each role lands on its own dashboard (Super Admin → Utama, Admin Laporan → Pembukuan, Admin Packing List → Packing List).
+  useEffect(() => { if (session && ready) nav({ to: role ? homeFor(role) : "/dashboard", replace: true }); }, [session, ready, role, nav]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true); setError(null);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setBusy(false);
-    if (error) setError(error.message === "Invalid login credentials" ? "Email atau password salah" : error.message);
+    if (error) setError(error.message === "Invalid login credentials" ? "Email atau password salah" : /banned/i.test(error.message) ? "Akun ini dinonaktifkan. Hubungi Super Admin." : error.message);
   };
 
   return (

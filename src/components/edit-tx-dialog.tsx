@@ -81,7 +81,7 @@ export function EditTxDialog({ txId, onClose }: { txId: string | null; onClose: 
           : isTransfer ? <p className="text-sm">Transaksi transfer internal tidak dapat diedit.</p>
           : step === "edit" ? (
             <div className="space-y-3">
-              <p className="text-xs text-muted-foreground">Pembukuan: <b>{orig.ledger === "admin1" ? "Admin 1" : "Admin 2"}</b></p>
+              <p className="text-xs text-muted-foreground">Pembukuan: <b>{orig.ledger === "admin1" ? "Admin Laporan 1" : "Admin Laporan 2"}</b></p>
               <div className="grid grid-cols-2 gap-2">
                 <Input type="date" value={f.tx_date} onChange={(e) => setF({ ...f, tx_date: e.target.value })} />
                 <Select value={f.account_id} onValueChange={(v) => setF({ ...f, account_id: v })}>

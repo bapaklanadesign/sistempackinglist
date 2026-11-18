@@ -58,7 +58,7 @@ function Page() {
           <div className="flex flex-wrap items-center gap-2">
             <PeriodFilter from={p.from} to={p.to} onChange={(v) => { setP(v); setPage(1); }} />
             {isSuper && <Select value={ledger} onValueChange={(v) => { setLedger(v as Ledger | "all"); setPage(1); }}><SelectTrigger className="h-8 w-32 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value="all">Semua</SelectItem><SelectItem value="admin1">Admin 1</SelectItem><SelectItem value="admin2">Admin 2</SelectItem></SelectContent></Select>}
+              <SelectContent><SelectItem value="all">Semua</SelectItem><SelectItem value="admin1">Admin Laporan 1</SelectItem><SelectItem value="admin2">Admin Laporan 2</SelectItem></SelectContent></Select>}
             <Select value={acc} onValueChange={(v) => { setAcc(v); setPage(1); }}><SelectTrigger className="h-8 w-32 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent><SelectItem value="all">Semua Rekening</SelectItem>{ACCS.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select>
             <Input className="h-8 w-40 text-xs" placeholder="Cari keterangan" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
@@ -73,7 +73,7 @@ function Page() {
                 return (
                   <tr key={t.id}>
                     <td className={td}>{fmtDate(t.tx_date)}</td>
-                    {isSuper && <td className={td}>{t.ledger === "admin1" ? "Admin 1" : "Admin 2"}</td>}
+                    {isSuper && <td className={td}>{t.ledger === "admin1" ? "Admin Laporan 1" : "Admin Laporan 2"}</td>}
                     <td className={td}>{t.bank_accounts?.name}</td><td className={td}>{txTypeLabel[t.tx_type]}</td>
                     <td className={`${td} max-w-xs truncate`} title={t.description}>{t.description}</td><td className={td}>{t.category ?? "-"}</td>
                     <td className={`${td} text-right font-semibold ${plus ? "text-success" : "text-destructive"}`}>{plus ? "+" : "-"}{rupiah(t.amount)}</td>
@@ -135,7 +135,7 @@ function AddTxDialog({ onClose }: { onClose: () => void }) {
           <div className="grid grid-cols-2 gap-2">
             <Input type="date" aria-label="Tanggal" value={f.tx_date} onChange={(e) => setF({ ...f, tx_date: e.target.value })} />
             {isSuper && <Select value={f.ledger} onValueChange={(v) => setF({ ...f, ledger: v as Ledger, account_id: "" })}><SelectTrigger aria-label="Pembukuan"><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value="admin1">Admin 1</SelectItem><SelectItem value="admin2">Admin 2</SelectItem></SelectContent></Select>}
+              <SelectContent><SelectItem value="admin1">Admin Laporan 1</SelectItem><SelectItem value="admin2">Admin Laporan 2</SelectItem></SelectContent></Select>}
             <Select value={f.account_id} onValueChange={(v) => setF({ ...f, account_id: v })}><SelectTrigger aria-label="Rekening"><SelectValue placeholder="Rekening" /></SelectTrigger>
               <SelectContent>{mine.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select>
           </div>

@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_app/rekening")({
   component: Page,
 });
 
-const ledgerName = (l: string | null) => (l === "admin1" ? "Admin 1" : "Admin 2");
+const ledgerName = (l: string | null) => (l === "admin1" ? "Admin Laporan 1" : "Admin Laporan 2");
 
 function Page() {
   const qc = useQueryClient();
@@ -142,7 +142,7 @@ function AddAccountDialog({ onClose, onSaved }: { onClose: () => void; onSaved: 
         <DialogHeader><DialogTitle>Tambah Rekening</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <Select value={f.ledger} onValueChange={(v) => setF({ ...f, ledger: v as Ledger })}><SelectTrigger aria-label="Pembukuan"><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="admin1">Admin 1</SelectItem><SelectItem value="admin2">Admin 2</SelectItem></SelectContent></Select>
+            <SelectContent><SelectItem value="admin1">Admin Laporan 1</SelectItem><SelectItem value="admin2">Admin Laporan 2</SelectItem></SelectContent></Select>
           <Input placeholder="Nama rekening (mis. BCA, BRI)" maxLength={80} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
           <Input placeholder="Saldo awal (opsional)" inputMode="decimal" value={f.opening} onChange={(e) => setF({ ...f, opening: e.target.value })} />
           <Input placeholder="Urutan tampilan (angka)" inputMode="numeric" value={f.sort} onChange={(e) => setF({ ...f, sort: e.target.value })} />

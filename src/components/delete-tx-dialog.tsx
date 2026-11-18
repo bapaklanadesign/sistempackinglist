@@ -51,7 +51,7 @@ export function DeleteTxDialog({ txId, onClose }: { txId: string | null; onClose
             <div className="rounded border p-3 text-sm">
               <p className="break-words font-semibold">{tx.description}</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                {fmtDate(tx.tx_date)} · {txTypeLabel[tx.tx_type]} · {tx.ledger === "admin1" ? "Admin 1" : "Admin 2"}
+                {fmtDate(tx.tx_date)} · {txTypeLabel[tx.tx_type]} · {tx.ledger === "admin1" ? "Admin Laporan 1" : "Admin Laporan 2"}
               </p>
               <p className="mt-1 font-bold">{rupiah(tx.amount)}</p>
             </div>

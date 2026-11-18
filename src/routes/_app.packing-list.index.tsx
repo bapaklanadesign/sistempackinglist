@@ -41,7 +41,7 @@ function Page() {
   };
   return (
     <>
-      <PageHeader title="Data Packing List" subtitle="Dokumen Packing List bersama Super Admin, Admin 1 dan Admin 2">
+      <PageHeader title="Data Packing List" subtitle="Dokumen Packing List bersama Super Admin dan Admin Packing List">
         <Button asChild size="sm"><Link to="/packing-list/baru"><Plus className="h-4 w-4" />Packing List Baru</Link></Button>
       </PageHeader>
       <main className="min-w-0 p-3 sm:p-6">

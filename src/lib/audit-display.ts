@@ -8,13 +8,16 @@ const labels: Record<string, string> = {
   opening_balance: "Saldo awal", review_status: "Status pemeriksaan", status: "Status pemeriksaan",
   from: "Rekening asal", to: "Rekening tujuan", file: "Nama berkas", imported: "Transaksi diimpor",
   rows_total: "Jumlah baris", rows_imported: "Transaksi diimpor", rows_skipped: "Baris dilewati", note: "Catatan",
-  sort_order: "Urutan tampilan",
+  sort_order: "Urutan tampilan", full_name: "Nama", email: "Email", role: "Peran",
 };
+const roleNames: Record<string, string> = { super_admin: "Super Admin", admin1: "Admin Laporan 1", admin2: "Admin Laporan 2", admin_packing: "Admin Packing List" };
 export const auditActivity: Record<string, string> = {
   update: "Mengubah transaksi", transfer: "Transfer antar rekening", import: "Mengimpor transaksi Excel",
   opening_balance: "Mengubah saldo awal", review_status: "Memeriksa transaksi", review: "Memeriksa transaksi",
   create: "Menambah transaksi", delete: "Menghapus transaksi",
   create_account: "Menambah rekening", update_account: "Mengubah rekening", delete_account: "Menghapus rekening",
+  user_create: "Membuat akun pengguna", user_update: "Mengubah akun pengguna", user_disable: "Menonaktifkan akun",
+  user_enable: "Mengaktifkan akun", user_reset_password: "Reset password akun",
 };
 const review: Record<string, string> = { unchecked: "Belum Diperiksa", match: "Cocok", mismatch: "Tidak Cocok" };
 function values(data: unknown): Values {
@@ -27,6 +30,7 @@ export function auditChanges(beforeData: unknown, afterData: unknown, accountNam
     if (["amount", "opening_balance"].includes(key)) return Number.isFinite(Number(value)) ? rupiah(Number(value)) : "Nilai tidak tersedia";
     if (["account_id", "from", "to"].includes(key)) return accountName(String(value));
     if (["review_status", "status"].includes(key)) return review[String(value)] ?? "Status lainnya";
+    if (key === "role") return roleNames[String(value)] ?? "Peran lainnya";
     if (key === "tx_type") return txTypeLabel[String(value)] ?? "Jenis lainnya";
     if (["tx_date", "date"].includes(key)) return fmtDate(String(value));
     return typeof value === "object" ? "Rincian tidak tersedia" : String(value);

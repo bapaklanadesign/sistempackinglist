@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_app/laporan")({
 });
 
 const ACCS = ["BCA", "BRI", "Mandiri", "BNI", "MDU"];
-const ledgerName = (l: string) => (l === "admin1" ? "Admin 1" : "Admin 2");
+const ledgerName = (l: string) => (l === "admin1" ? "Admin Laporan 1" : "Admin Laporan 2");
 
 function Page() {
   const { role } = useAuth();
@@ -66,7 +66,7 @@ function Page() {
         <Panel title="Filter" action={<div className="flex flex-wrap gap-2">
           <PeriodFilter from={p.from} to={p.to} onChange={(v) => { setP(v); reset(); }} />
           {isSuper && <Select value={ledger} onValueChange={(v) => { setLedger(v as Ledger | "all"); reset(); }}><SelectTrigger aria-label="Admin" className="h-8 w-32 text-xs"><SelectValue /></SelectTrigger>
-            <SelectContent><SelectItem value="all">Semua Admin</SelectItem><SelectItem value="admin1">Admin 1</SelectItem><SelectItem value="admin2">Admin 2</SelectItem></SelectContent></Select>}
+            <SelectContent><SelectItem value="all">Semua Admin</SelectItem><SelectItem value="admin1">Admin Laporan 1</SelectItem><SelectItem value="admin2">Admin Laporan 2</SelectItem></SelectContent></Select>}
           <Select value={acc} onValueChange={(v) => { setAcc(v); reset(); }}><SelectTrigger aria-label="Rekening" className="h-8 w-32 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent><SelectItem value="all">Semua Rekening</SelectItem>{ACCS.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}</SelectContent></Select>
           {isSuper && <Select value={status} onValueChange={(v) => { setStatus(v as ReviewStatus | "all"); reset(); }}><SelectTrigger aria-label="Status" className="h-8 w-36 text-xs"><SelectValue /></SelectTrigger>

@@ -2,7 +2,7 @@ import { fmtDate, txTypeLabel } from "./format";
 import type { Balance, Tx } from "./data";
 
 type Row = Tx & { bank_accounts: { name: string } | null };
-const ledgerName = (l: string) => (l === "admin1" ? "Admin 1" : "Admin 2");
+const ledgerName = (l: string) => (l === "admin1" ? "Admin Laporan 1" : "Admin Laporan 2");
 
 const ACCOUNT_ORDER = ["BCA", "BRI", "Mandiri", "BNI", "MDU"];
 const FILL = {

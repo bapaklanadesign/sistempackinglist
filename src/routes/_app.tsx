@@ -7,7 +7,7 @@ import { useRealtimeSync, useRtStatus } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
-export const Route = createFileRoute("/_app")({ ssr: false, head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }), component: AppLayout });
+export const Route = createFileRoute("/_app")({ head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }), component: AppLayout });
 
 const superMenu = [
   { to: "/transaksi", label: "Semua Transaksi", icon: List },

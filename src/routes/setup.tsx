@@ -1,12 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { AuthShell } from "./login";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { bootstrapSuperAdmin, setupStatus } from "@/lib/users.functions";
+import { bootstrapSuperAdmin, setupStatus } from "@/lib/users-api";
 import { errMsg } from "@/lib/format";
 
 export const Route = createFileRoute("/setup")({
@@ -26,21 +25,19 @@ export const Route = createFileRoute("/setup")({
 
 function Setup() {
   const nav = useNavigate();
-  const status = useServerFn(setupStatus);
-  const boot = useServerFn(bootstrapSuperAdmin);
   const [open, setOpen] = useState<boolean | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [f, setF] = useState({ fullName: "", email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { status().then((r) => setOpen(r.open)).catch((e) => setLoadErr(errMsg(e))); }, [status]);
+  useEffect(() => { setupStatus().then((r) => setOpen(r.open)).catch((e) => setLoadErr(errMsg(e))); }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true); setError(null);
     try {
-      await boot({ data: f });
+      await bootstrapSuperAdmin(f);
       const { error } = await supabase.auth.signInWithPassword({ email: f.email.trim().toLowerCase(), password: f.password });
       if (error) throw error;
       toast.success("Super Admin berhasil dibuat");

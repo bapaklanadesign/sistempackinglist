@@ -46,3 +46,15 @@
 - [x] Gradient glowing line/area charts with day/week/month/year filter, gradient bar charts, spinning donut charts with centre percentage; all from existing database rows
 - [x] Pause animations off-screen, on hidden tabs and for reduced motion; 112 tests passed
 - [ ] View the signed-in dashboards with real data on phone and desktop — automated sign-in unavailable for this external Supabase project
+
+## Static SPA + Firebase Hosting migration
+- [x] Migrate TanStack Start SSR/Nitro to Vite React SPA (dist/index.html + dist/assets), Firebase Hosting config, self-hosted media, account creation via database functions; build, preview, deep-link refresh checks
+- [ ] Remove temporary role-less check account spa-migration-check@example.invalid — deletion declined by user; awaiting approval
+
+## Four-role access (Super Admin, Admin Laporan 1, Admin Laporan 2, Admin Packing List)
+- [ ] Audit login, database and RLS before changes
+- [ ] Add Admin Packing List role; restrict Packing List data to Super Admin + Admin Packing List, bookkeeping to Super Admin + Admin Laporan 1/2 (RLS + RPC checks)
+- [ ] Role-based redirect after login, sidebar/menu per role, blocked direct URLs
+- [ ] User Management (Super Admin only): create, edit name/role, activate/deactivate, reset password; no self role escalation
+- [ ] Test login and access for all four roles
+- [ ] Separate dashboards per role (Pembukuan vs Packing List vs combined), role-specific stats/charts; Super Admin switches modules without re-login

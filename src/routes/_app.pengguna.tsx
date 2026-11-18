@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { PageHeader } from "./_app";
 import { Panel, QueryState, td, th } from "@/components/ui-kit";
@@ -9,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { profilesQ } from "@/lib/data";
-import { createUser } from "@/lib/users.functions";
+import { createUser } from "@/lib/users-api";
 import { roleLabel, type Role } from "@/lib/auth";
 import { errMsg } from "@/lib/format";
 
@@ -21,7 +20,6 @@ export const Route = createFileRoute("/_app/pengguna")({
 function Page() {
   const qc = useQueryClient();
   const q = useQuery(profilesQ());
-  const create = useServerFn(createUser);
   const [f, setF] = useState({ fullName: "", email: "", password: "", role: "admin1" as Role });
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -30,7 +28,7 @@ function Page() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setBusy(true); setErr(null);
     try {
-      await create({ data: f });
+      await createUser(f);
       toast.success("Akun dibuat. Berikan email & password kepada pengguna.");
       setF({ fullName: "", email: "", password: "", role: "admin1" });
       qc.invalidateQueries({ queryKey: ["profiles"] });

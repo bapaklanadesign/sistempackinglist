@@ -24,7 +24,6 @@
 - [x] Realtime badge + live updates
 - [x] Review status per transaction (Belum Diperiksa / Cocok / Tidak Cocok), Super Admin marks it, audited
 - [x] Laporan Gabungan: transaction table with filters (admin, date, account) + status marking + edit
-- [ ] Remove temporary QA test accounts (cleanup was declined — ask user)
 - [x] Super Admin CRUD: Semua Transaksi (add/view/edit/delete), Laporan Gabungan (edit/delete), Rekening & Saldo Awal (add/edit/delete + saldo awal) — audited RPCs (create/delete_transaction, create/update/delete_bank_account) with delete confirmations; build OK, 38 tests passed. Signed-in browser check blocked: external Supabase session unavailable.
 - [x] Remove image credit texts (ship photo, container illustration) from public footer — verified in browser.
 - [x] User asked to connect a different Supabase project ("jonijiji239@gmail.com's Project") — project already connected to external Supabase (nywokuprwanjuwbtunrc); switching is self-service in Settings → General → External Supabase.
@@ -52,9 +51,10 @@
 - [ ] Remove temporary role-less check account spa-migration-check@example.invalid — deletion declined by user; awaiting approval
 
 ## Four-role access (Super Admin, Admin Laporan 1, Admin Laporan 2, Admin Packing List)
-- [ ] Audit login, database and RLS before changes
-- [ ] Add Admin Packing List role; restrict Packing List data to Super Admin + Admin Packing List, bookkeeping to Super Admin + Admin Laporan 1/2 (RLS + RPC checks)
-- [ ] Role-based redirect after login, sidebar/menu per role, blocked direct URLs
-- [ ] User Management (Super Admin only): create, edit name/role, activate/deactivate, reset password; no self role escalation
-- [ ] Test login and access for all four roles
-- [ ] Separate dashboards per role (Pembukuan vs Packing List vs combined), role-specific stats/charts; Super Admin switches modules without re-login
+- [x] Audit login, database and RLS before changes
+- [x] Add Admin Packing List role; Packing List data limited to Super Admin + Admin Packing List, bookkeeping to Super Admin + Admin Laporan 1/2 (RLS + RPC checks, verified per role against the live database)
+- [x] Role-based redirect after login, sidebar per role, forbidden direct URLs redirect without rendering the page
+- [x] User Management (Super Admin only): create, edit name/role, activate/deactivate, reset password; self role change and self-deactivation blocked
+- [x] Tested all four roles in the browser with temporary QA accounts (now deactivated)
+- [x] Separate dashboards per role; Super Admin module switcher without re-login
+- [ ] Remove the 4 deactivated QA accounts (qa-*@mrexpress.test) — awaiting user approval to delete

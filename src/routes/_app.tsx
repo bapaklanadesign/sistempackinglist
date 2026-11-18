@@ -77,15 +77,18 @@ function AppLayout() {
   const [bkOpen, setBkOpen] = useState(true);
   useEffect(() => { if (inPacking) setPlOpen(true); if (inBook) setBkOpen(true); }, [inPacking, inBook]);
   useRealtimeSync(!!role);
-  const allowed = canOpen(role, path);
+  // Check both the requested and the currently rendered page: during a navigation the old page stays
+  // mounted until the next one loads, so a forbidden page must never render even for a moment.
+  const shown = useRouterState({ select: (s) => s.resolvedLocation?.pathname ?? s.location.pathname });
+  const allowed = canOpen(role, path) && canOpen(role, shown);
 
   useEffect(() => { if (ready && !session) nav({ to: "/login", replace: true }); }, [ready, session, nav]);
   // Direct URLs outside the role's modules go back to the role's own dashboard (data stays protected by RLS).
   useEffect(() => {
-    if (!ready || !role || allowed) return;
+    if (!ready || !role || canOpen(role, path)) return;
     toast.error("Halaman ini tidak tersedia untuk peran Anda");
     nav({ to: homeFor(role), replace: true });
-  }, [ready, role, allowed, nav]);
+  }, [ready, role, path, nav]);
   useEffect(() => setOpen(false), [path]);
 
   const logout = async () => { await signOut(); nav({ to: "/login", replace: true }); };

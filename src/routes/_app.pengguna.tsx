@@ -42,7 +42,7 @@ function Page() {
   const { session } = useAuth();
   const me = session?.user.id;
   const q = useQuery(usersQ);
-  const [f, setF] = useState({ fullName: "", email: "", password: "", role: "admin1" as Role });
+  const [f, setF] = useState({ fullName: "", email: "", password: "", role: "admin_packing" as Role });
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [edit, setEdit] = useState<ManagedUser | null>(null);
@@ -58,7 +58,7 @@ function Page() {
     try {
       await createUser(f);
       toast.success("Akun dibuat. Berikan email & password kepada pengguna.");
-      setF({ fullName: "", email: "", password: "", role: "admin1" });
+      setF({ fullName: "", email: "", password: "", role: "admin_packing" });
       refresh();
     } catch (e) { setErr(errMsg(e)); } finally { setBusy(false); }
   };
@@ -74,7 +74,7 @@ function Page() {
   };
 
   const actions = (u: ManagedUser) => (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-nowrap gap-1">
       <Button size="sm" variant="ghost" aria-label={`Ubah ${u.email}`} onClick={() => setEdit(u)}><Pencil className="h-4 w-4" /></Button>
       <Button size="sm" variant="ghost" aria-label={`Reset password ${u.email}`} onClick={() => setPw(u)}><KeyRound className="h-4 w-4" /></Button>
       {u.id !== me && <Button size="sm" variant="ghost" className={u.active ? "text-destructive" : "text-success"} aria-label={`${u.active ? "Nonaktifkan" : "Aktifkan"} ${u.email}`} onClick={() => setToggle(u)}><Power className="h-4 w-4" /></Button>}
@@ -84,7 +84,7 @@ function Page() {
   return (
     <>
       <PageHeader title="Manajemen Pengguna" subtitle="Hanya Super Admin yang dapat membuat akun dan mengubah peran" />
-      <main className="grid min-w-0 items-start gap-4 p-3 sm:p-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <main className="grid min-w-0 items-start gap-4 p-3 sm:p-4 2xl:grid-cols-[minmax(0,1fr)_360px]">
         <Panel title="Daftar Pengguna">
           <QueryState isLoading={q.isLoading} error={q.error} empty={!q.data?.length} onRetry={() => q.refetch()}>
             <div className="divide-y md:hidden">{q.data?.map((u) => <article key={u.id} className="min-w-0 space-y-2 py-3">
@@ -118,7 +118,7 @@ function Page() {
 }
 
 function EditDialog({ user, self, taken, onClose, onSaved }: { user: ManagedUser | null; self: boolean; taken: (r: Role, except?: string) => boolean; onClose: () => void; onSaved: () => void }) {
-  const [f, setF] = useState({ fullName: "", email: "", role: "admin1" as Role });
+  const [f, setF] = useState({ fullName: "", email: "", role: "admin_packing" as Role });
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [loadedFor, setLoadedFor] = useState<string | null>(null);

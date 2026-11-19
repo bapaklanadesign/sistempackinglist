@@ -12,7 +12,6 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 export const Route = createFileRoute("/_app")({ head: () => ({ meta: [{ name: "robots", content: "noindex, nofollow" }] }), component: AppLayout });
 
 const bookkeepingSuper = [
-  { to: "/dashboard-pembukuan", label: "Dashboard Pembukuan", icon: LayoutGrid },
   { to: "/transaksi", label: "Semua Transaksi", icon: List },
   { to: "/laporan", label: "Laporan Gabungan", icon: FileText },
   { to: "/rekening", label: "Rekening & Saldo Awal", icon: Wallet },
@@ -48,21 +47,6 @@ function MenuLinks({ items, path }: { items: readonly MenuItem[]; path: string }
   return <>{items.map((m) => <Link key={m.to} to={m.to} className={navCls(isActive(path, m.to))}><m.icon className="h-4 w-4" />{m.label}</Link>)}</>;
 }
 const Section = ({ children }: { children: ReactNode }) => <p className="px-3 pb-1 pt-3 text-[10px] font-semibold tracking-widest opacity-60">{children}</p>;
-
-/** Super Admin can jump between modules without signing in again. */
-function ModuleSwitch({ path }: { path: string }) {
-  const area = areaOf(path);
-  const items = [
-    { to: "/dashboard", label: "Utama", on: path === "/dashboard" },
-    { to: "/dashboard-pembukuan", label: "Pembukuan", on: area === "bookkeeping" || path === "/rekening" },
-    { to: "/dashboard-packing", label: "Packing", on: area === "packing" },
-  ] as const;
-  return (
-    <div role="navigation" aria-label="Pindah modul" className="mx-3 mb-2 grid grid-cols-3 gap-1 rounded-lg bg-sidebar-accent/60 p-1">
-      {items.map((i) => <Link key={i.to} to={i.to} className={cn("rounded-md px-1 py-1.5 text-center text-[11px] font-bold transition-colors", i.on ? "bg-sidebar-primary text-sidebar-primary-foreground shadow" : "hover:bg-sidebar-accent")}>{i.label}</Link>)}
-    </div>
-  );
-}
 
 function AppLayout() {
   const { ready, session, role, roleError, signOut } = useAuth();
@@ -112,14 +96,13 @@ function AppLayout() {
           <p className="text-[9px] font-semibold tracking-widest opacity-70">{tagline[role]}</p>
         </div>
         <p className="px-5 pb-2 text-sm font-bold text-sidebar-accent-foreground">{roleLabel[role]}</p>
-        {isSuper && <ModuleSwitch path={path} />}
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-3">
           {isSuper && <Link to="/dashboard" className={navCls(path === "/dashboard")}><LayoutGrid className="h-4 w-4" />Dashboard Utama</Link>}
           {canBookkeeping(role) && (isSuper ? (
             <Group label="Pembukuan" icon={Wallet} open={bkOpen} onToggle={() => setBkOpen((o) => !o)}><MenuLinks items={bookkeepingSuper} path={path} /></Group>
           ) : (<><Section>PEMBUKUAN</Section><MenuLinks items={bookkeepingAdmin} path={path} /></>))}
           {canPacking(role) && (isSuper ? (
-            <Group label="Packing List" icon={Package} open={plOpen} onToggle={() => setPlOpen((o) => !o)}><MenuLinks items={packingMenu} path={path} /></Group>
+            <Group label="Packing List" icon={Package} open={plOpen} onToggle={() => setPlOpen((o) => !o)}><MenuLinks items={packingMenu.filter((m) => m.to !== "/dashboard-packing")} path={path} /></Group>
           ) : (<><Section>PACKING LIST</Section><MenuLinks items={packingMenu} path={path} /></>))}
           {isSuper && <><Section>ADMINISTRASI</Section><MenuLinks items={adminTools} path={path} /></>}
           <Section>AKUN</Section>

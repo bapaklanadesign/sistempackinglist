@@ -44,8 +44,8 @@ function ShipmentTrend({ rows, className }: { rows: PlRow[]; className?: string 
   );
 }
 
-/** Packing List part of Dashboard Utama; every number is computed from rows read from the database. */
-export function PackingDashboard() {
+/** Packing List dashboard (own page and Dashboard Utama section); every number is computed from rows read from the database. */
+export function PackingDashboard({ heading = true }: { heading?: boolean }) {
   const q = useQuery(plListQ());
   const rows = q.data ?? [];
   const s = plSummary(rows);
@@ -55,10 +55,10 @@ export function PackingDashboard() {
   const tr = (f: (r: PlRow) => number) => mtdTrend(rows, (r) => r.pl_date, f, t);
   return (
     <section aria-label="Ringkasan Packing List" className="min-w-0 space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      {heading && <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-bold">Packing List</h2>
         <Link to="/packing-list" className={linkCls}>Buka Data Packing List</Link>
-      </div>
+      </div>}
       <QueryState isLoading={q.isLoading} error={q.error} onRetry={() => q.refetch()}>
         <div className="grid min-w-0 grid-cols-1 gap-3 min-[400px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
           <StatCard index={0} icon={ClipboardList} tone="blue" label="Total Dokumen" value={s.documents} format="int" trend={tr(() => 1)} />

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Receipt, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { Package, Receipt, TrendingDown, TrendingUp, Wallet, type LucideIcon } from "lucide-react";
 import { BarsChart, DonutChart, PeriodTabs, TrendChart, VIZ, VizLegendStat } from "@/components/charts/viz";
 import { balanceTrend, mtdTrend, rangeStart, seriesBy, type Period } from "@/lib/chart-logic";
 import { cn } from "@/lib/utils";
@@ -157,8 +157,8 @@ function FlowChart({ ledger, className }: { ledger: Ledger | "all"; className?: 
   );
 }
 
-/** combined = Dashboard Utama (Super Admin: Pembukuan + Packing List); otherwise the Pembukuan-only dashboard. */
-export function BookkeepingDashboard({ combined = false }: { combined?: boolean }) {
+/** Super Admin always gets Dashboard Utama (Pembukuan + Packing List); Admin Laporan 1/2 get their own ledger dashboard. */
+export function BookkeepingDashboard() {
   const { role } = useAuth();
   const bal = useQuery(balancesQ());
   const counts = useQuery(txCountQ());
@@ -166,7 +166,7 @@ export function BookkeepingDashboard({ combined = false }: { combined?: boolean 
   const isSuper = role === "super_admin";
   // Same query as "Transaksi Terbaru", so it is fetched once and reused for the trend arrows.
   const recent = useQuery(txQ({ from: monthStart(1), to: today(), ledger: isSuper ? "all" : (role as Ledger) }));
-  if (isSuper) return <SuperDash bal={bal} counts={counts.data} recent={recent.data ?? []} combined={combined} />;
+  if (isSuper) return <SuperDash bal={bal} counts={counts.data} recent={recent.data ?? []} />;
   const l = role as Ledger;
   return (
     <>
@@ -178,60 +178,108 @@ export function BookkeepingDashboard({ combined = false }: { combined?: boolean 
           <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 lg:grid-cols-4"><Stats l={l} rows={rows} count={counts.data?.[l]} recent={recent.data ?? []} /></div>
           <div className="grid min-w-0 gap-4 xl:grid-cols-3">
             <FlowChart ledger={l} className="xl:col-span-2" />
-            <AccountList rows={rows} ledger={l} isSuper={false} />
-          </div>
-          <div className="grid min-w-0 gap-4 xl:grid-cols-3">
-            <RecentTx ledger={l} className={cn(glass, "xl:col-span-2")} />
             <MonthSummary ledger={l} />
           </div>
-          <Panel title="Saldo Setiap Rekening" className={glass}>
-            <BarsChart colorful xKey="a" format="rupiah" height={240} data={rows.filter((r) => r.ledger === l).map((r) => ({ a: r.name ?? "-", v: Number(r.balance), detail: r.name ?? "-" }))} series={[{ key: "v", name: "Saldo", color: VIZ.blue }]} />
-            <div className="mt-2 grid grid-cols-2 gap-3 text-center text-[11px] sm:grid-cols-5">{rows.filter((r) => r.ledger === l).map((r) => <div key={r.account_id} className="min-w-0 break-words"><b>{r.name}</b><br />{rupiah(r.balance)}</div>)}</div>
-          </Panel>
+          <div className="grid min-w-0 gap-4 xl:grid-cols-3">
+            <Panel title="Saldo Setiap Rekening" className={cn(glass, "xl:col-span-2")}>
+              <BarsChart colorful xKey="a" format="rupiah" height={240} data={rows.filter((r) => r.ledger === l).map((r) => ({ a: r.name ?? "-", v: Number(r.balance), detail: r.name ?? "-" }))} series={[{ key: "v", name: "Saldo", color: VIZ.blue }]} />
+            </Panel>
+            <AccountList rows={rows} ledger={l} isSuper={false} />
+          </div>
+          <RecentTx ledger={l} className={glass} />
         </QueryState>
       </main>
     </>
   );
 }
 
-function SuperDash({ bal, counts, recent, combined }: { bal: ReturnType<typeof useQuery<Balance[]>>; counts?: { admin1: number; admin2: number } | undefined; recent: RecentRow[]; combined: boolean }) {
+type QuickLink = { to: "/transaksi" | "/laporan" | "/rekening" | "/packing-list" | "/pengiriman" | "/manifest"; label: string };
+const SECTIONS: { id: string; label: string; icon: LucideIcon }[] = [
+  { id: "bagian-pembukuan", label: "Pembukuan", icon: Wallet },
+  { id: "bagian-packing", label: "Packing List", icon: Package },
+];
+
+/** Jumps within Dashboard Utama; stays visible while scrolling on wide screens. */
+function JumpNav() {
+  const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  return (
+    <nav aria-label="Bagian dashboard" className="z-20 flex w-fit max-w-full flex-wrap gap-1 rounded-xl border bg-card/95 p-1 shadow-sm backdrop-blur lg:sticky lg:top-3">
+      {SECTIONS.map((sec) => (
+        <button key={sec.id} type="button" onClick={() => go(sec.id)} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold text-foreground transition-colors hover:bg-muted">
+          <sec.icon className="h-4 w-4 text-primary" />{sec.label}
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+function SectionHead({ id, icon: Icon, title, desc, links }: { id: string; icon: LucideIcon; title: string; desc: string; links: QuickLink[] }) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-3 border-b pb-3">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow"><Icon className="h-5 w-5" /></span>
+        <div className="min-w-0"><h2 id={`${id}-judul`} className="text-lg font-extrabold leading-tight">{title}</h2><p className="text-xs text-muted-foreground">{desc}</p></div>
+      </div>
+      <div className="flex flex-wrap gap-2">{links.map((k) => <Link key={k.to} to={k.to} className="rounded-md border bg-card px-2.5 py-1 text-xs font-semibold text-primary transition-colors hover:bg-muted">{k.label}</Link>)}</div>
+    </div>
+  );
+}
+
+/** Dashboard Utama: the Super Admin's single dashboard for Pembukuan and Packing List. */
+function SuperDash({ bal, counts, recent }: { bal: ReturnType<typeof useQuery<Balance[]>>; counts?: { admin1: number; admin2: number } | undefined; recent: RecentRow[] }) {
   const rows = bal.data ?? [];
   const cmp = compareBalances(rows);
   const stat = (s: string) => cmp.filter((c) => c.status === s).length;
   return (
     <>
-      <PageHeader title={combined ? "Dashboard Utama" : "Dashboard Pembukuan"} subtitle={combined ? "Super Admin · Pembukuan & Packing List" : "Super Admin · Pembukuan"} />
-      <main className="dash-canvas min-w-0 space-y-5 p-3 sm:p-6">
-        <DashHero title={combined ? "Dashboard Super Admin" : "Pembukuan Gabungan"} subtitle={combined ? "Pantau pembukuan Admin Laporan 1, Admin Laporan 2 dan seluruh Packing List secara terintegrasi" : "Pantau dan bandingkan pembukuan Admin Laporan 1 dan Admin Laporan 2"} />
-        <QueryState isLoading={bal.isLoading} error={bal.error} onRetry={() => bal.refetch()}>
-          <div className="grid min-w-0 gap-5 2xl:grid-cols-2">{(["admin1", "admin2"] as const).map((ledger) => <section key={ledger} className="min-w-0" aria-label={`Ringkasan ${roleLabel[ledger]}`}><h2 className="mb-2 text-sm font-bold">Pembukuan {roleLabel[ledger]}</h2><div className="grid min-w-0 grid-cols-1 gap-3 min-[400px]:grid-cols-2 lg:grid-cols-4"><Stats l={ledger} rows={rows} count={counts?.[ledger]} recent={recent} /></div></section>)}</div>
-          <div className="grid min-w-0 gap-4 xl:grid-cols-3">
-            <Panel title="Grafik Saldo per Rekening" className={cn(glass, "xl:col-span-2")}>
-              <BarsChart xKey="name" format="rupiah" height={260} data={cmp.map((c) => ({ ...c, detail: c.name }))} series={[{ key: "admin1", name: "Admin Laporan 1", color: VIZ.blue }, { key: "admin2", name: "Admin Laporan 2", color: VIZ.cyan }]} />
-              <div className="mt-2 flex flex-wrap justify-center gap-4 text-xs"><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-[var(--viz-blue)]" />Admin Laporan 1</span><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-[var(--viz-cyan)]" />Admin Laporan 2</span></div>
-            </Panel>
-            <AccountList rows={rows} ledger="all" isSuper />
-          </div>
-          <FlowChart ledger="all" />
-          <div className="grid min-w-0 gap-4 xl:grid-cols-3">
-            <RecentTx ledger="all" className={cn(glass, "xl:col-span-2")} />
-            <MonthSummary ledger="all" />
-          </div>
-          <div className="grid min-w-0 gap-4 xl:grid-cols-2">
-            <Panel title="Perbandingan Saldo Rekening" className={glass}>
-              <div className="hidden overflow-x-auto md:block"><table className="w-full">
-                <thead><tr>{["Rekening", "Admin Laporan 1", "Admin Laporan 2", "Selisih", "Status"].map((h) => <th key={h} className={th}>{h}</th>)}</tr></thead>
-                <tbody>{cmp.map((c) => <tr key={c.name}><td className={td}><b>{c.name}</b></td><td className={td}>{rupiah(c.admin1)}</td><td className={td}>{rupiah(c.admin2)}</td><td className={td}>{rupiah(c.diff)}</td><td className={td}><StatusBadge s={c.status} /></td></tr>)}</tbody>
-              </table></div>
-              <div className="grid gap-3 sm:grid-cols-2 md:hidden">{cmp.map((c) => <div key={c.name} className="min-w-0 border-b pb-3 last:border-b-0"><div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2"><h3 className="font-bold">{c.name}</h3><StatusBadge s={c.status} /></div><dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs"><dt className="text-muted-foreground">Admin Laporan 1</dt><dd className="break-words text-right font-medium tabular-nums">{rupiah(c.admin1)}</dd><dt className="text-muted-foreground">Admin Laporan 2</dt><dd className="break-words text-right font-medium tabular-nums">{rupiah(c.admin2)}</dd><dt className="text-muted-foreground">Selisih</dt><dd className="break-words text-right font-bold tabular-nums">{rupiah(c.diff)}</dd></dl></div>)}</div>
-            </Panel>
-            <Panel title="Status Kecocokan Saldo" className={glass}>
-              <DonutChart format="int" data={[{ name: "Cocok", value: stat("Cocok"), color: VIZ.teal }, { name: "Tidak Cocok", value: stat("Tidak Cocok"), color: VIZ.red }]} />
-            </Panel>
-          </div>
-        </QueryState>
-        {combined && <PackingDashboard />}
-        <MatchPanel />
+      <PageHeader title="Dashboard Utama" subtitle="Super Admin · Pembukuan & Packing List" />
+      <main className="dash-canvas min-w-0 space-y-6 p-3 sm:p-6">
+        <DashHero title="Dashboard Super Admin" subtitle="Pembukuan Admin Laporan 1 & 2 dan seluruh Packing List dalam satu halaman" />
+        <JumpNav />
+
+        <section id="bagian-pembukuan" aria-labelledby="bagian-pembukuan-judul" className="min-w-0 scroll-mt-20 space-y-4">
+          <SectionHead id="bagian-pembukuan" icon={Wallet} title="Pembukuan" desc="Saldo, arus keuangan dan kecocokan Admin Laporan 1 & Admin Laporan 2"
+            links={[{ to: "/transaksi", label: "Semua Transaksi" }, { to: "/laporan", label: "Laporan Gabungan" }, { to: "/rekening", label: "Rekening" }]} />
+          <QueryState isLoading={bal.isLoading} error={bal.error} onRetry={() => bal.refetch()}>
+            <div className="grid min-w-0 gap-4 2xl:grid-cols-2">{(["admin1", "admin2"] as const).map((ledger) => (
+              <div key={ledger} className="min-w-0 space-y-2" aria-label={`Ringkasan ${roleLabel[ledger]}`}>
+                <h3 className="text-sm font-bold">{roleLabel[ledger]}</h3>
+                <div className="grid min-w-0 grid-cols-1 gap-3 min-[400px]:grid-cols-2 lg:grid-cols-4"><Stats l={ledger} rows={rows} count={counts?.[ledger]} recent={recent} /></div>
+              </div>
+            ))}</div>
+            <div className="grid min-w-0 gap-4 xl:grid-cols-3">
+              <FlowChart ledger="all" className="xl:col-span-2" />
+              <MonthSummary ledger="all" />
+            </div>
+            <div className="grid min-w-0 gap-4 xl:grid-cols-3">
+              <Panel title="Grafik Saldo per Rekening" className={cn(glass, "xl:col-span-2")}>
+                <BarsChart xKey="name" format="rupiah" height={260} data={cmp.map((c) => ({ ...c, detail: c.name }))} series={[{ key: "admin1", name: "Admin Laporan 1", color: VIZ.blue }, { key: "admin2", name: "Admin Laporan 2", color: VIZ.cyan }]} />
+                <div className="mt-2 flex flex-wrap justify-center gap-4 text-xs"><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-[var(--viz-blue)]" />Admin Laporan 1</span><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-[var(--viz-cyan)]" />Admin Laporan 2</span></div>
+              </Panel>
+              <AccountList rows={rows} ledger="all" isSuper />
+            </div>
+            <div className="grid min-w-0 gap-4 xl:grid-cols-3">
+              <Panel title="Perbandingan Saldo Rekening" className={cn(glass, "xl:col-span-2")}>
+                <div className="hidden overflow-x-auto md:block"><table className="w-full">
+                  <thead><tr>{["Rekening", "Admin Laporan 1", "Admin Laporan 2", "Selisih", "Status"].map((h) => <th key={h} className={th}>{h}</th>)}</tr></thead>
+                  <tbody>{cmp.map((c) => <tr key={c.name}><td className={td}><b>{c.name}</b></td><td className={td}>{rupiah(c.admin1)}</td><td className={td}>{rupiah(c.admin2)}</td><td className={td}>{rupiah(c.diff)}</td><td className={td}><StatusBadge s={c.status} /></td></tr>)}</tbody>
+                </table></div>
+                <div className="grid gap-3 sm:grid-cols-2 md:hidden">{cmp.map((c) => <div key={c.name} className="min-w-0 border-b pb-3 last:border-b-0"><div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2"><h3 className="font-bold">{c.name}</h3><StatusBadge s={c.status} /></div><dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs"><dt className="text-muted-foreground">Admin Laporan 1</dt><dd className="break-words text-right font-medium tabular-nums">{rupiah(c.admin1)}</dd><dt className="text-muted-foreground">Admin Laporan 2</dt><dd className="break-words text-right font-medium tabular-nums">{rupiah(c.admin2)}</dd><dt className="text-muted-foreground">Selisih</dt><dd className="break-words text-right font-bold tabular-nums">{rupiah(c.diff)}</dd></dl></div>)}</div>
+              </Panel>
+              <Panel title="Status Kecocokan Saldo" className={glass}>
+                <DonutChart format="int" data={[{ name: "Cocok", value: stat("Cocok"), color: VIZ.teal }, { name: "Tidak Cocok", value: stat("Tidak Cocok"), color: VIZ.red }]} />
+              </Panel>
+            </div>
+            <RecentTx ledger="all" className={glass} />
+          </QueryState>
+          <MatchPanel />
+        </section>
+
+        <section id="bagian-packing" aria-labelledby="bagian-packing-judul" className="min-w-0 scroll-mt-20 space-y-4">
+          <SectionHead id="bagian-packing" icon={Package} title="Packing List" desc="Dokumen, muatan, status pengiriman dan jadwal kapal"
+            links={[{ to: "/packing-list", label: "Data Packing List" }, { to: "/pengiriman", label: "Pengiriman" }, { to: "/manifest", label: "Manifest" }]} />
+          <PackingDashboard heading={false} />
+        </section>
       </main>
     </>
   );

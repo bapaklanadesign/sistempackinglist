@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Lock, Mail } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import kapal from "@/assets/kapal-foto.jpg";
 import { SiteNav } from "@/components/site/site-chrome";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ function Login() {
   const { session, ready, role } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -75,7 +76,7 @@ function Login() {
           <div className="relative mt-1"><Mail className="absolute left-3.5 top-3.5 h-4 w-4" /><Input className="pl-10" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
         </label>
         <label className="block text-xs font-semibold text-muted-foreground">Password
-          <div className="relative mt-1"><Lock className="absolute left-3.5 top-3.5 h-4 w-4" /><Input className="pl-10" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+          <div className="relative mt-1"><Lock className="absolute left-3.5 top-3.5 h-4 w-4" /><Input className="pl-10 pr-11" type={showPw ? "text" : "password"} required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /><button type="button" aria-label={showPw ? "Sembunyikan password" : "Lihat password"} aria-pressed={showPw} onClick={() => setShowPw((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">{showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div>
         </label>
         {error && <p role="alert" className="rounded bg-danger-soft px-3 py-2 text-xs text-destructive">{error}</p>}
         <Button type="submit" className="w-full" size="lg" disabled={busy}>{busy ? "Memproses..." : "Masuk"}</Button>

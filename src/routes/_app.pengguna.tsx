@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { KeyRound, Pencil, Power } from "lucide-react";
+import { KeyRound, Pencil, Power, Trash2, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "./_app";
 import { Panel, QueryState, td, th } from "@/components/ui-kit";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { createUser, listUsers, resetUserPassword, setUserActive, updateUser, type ManagedUser } from "@/lib/users-api";
+import { createUser, deleteUser, listUsers, resetUserPassword, setUserActive, updateUser, type ManagedUser } from "@/lib/users-api";
 import { roleLabel, useAuth, type Role } from "@/lib/auth";
 import { errMsg, fmtDate } from "@/lib/format";
 
@@ -49,6 +49,7 @@ function Page() {
   const [pw, setPw] = useState<ManagedUser | null>(null);
   const [toggle, setToggle] = useState<ManagedUser | null>(null);
   const [toggling, setToggling] = useState(false);
+  const [del, setDel] = useState<ManagedUser | null>(null);
   // Admin Laporan 1 and 2 each keep one account (one ledger each); the database enforces the same rule.
   const taken = (r: Role, except?: string) => (r === "admin1" || r === "admin2") && !!q.data?.some((u) => u.role === r && u.id !== except);
   const refresh = () => { qc.invalidateQueries({ queryKey: ["users"] }); qc.invalidateQueries({ queryKey: ["profiles"] }); };
@@ -78,6 +79,7 @@ function Page() {
       <Button size="sm" variant="ghost" aria-label={`Ubah ${u.email}`} onClick={() => setEdit(u)}><Pencil className="h-4 w-4" /></Button>
       <Button size="sm" variant="ghost" aria-label={`Reset password ${u.email}`} onClick={() => setPw(u)}><KeyRound className="h-4 w-4" /></Button>
       {u.id !== me && <Button size="sm" variant="ghost" className={u.active ? "text-destructive" : "text-success"} aria-label={`${u.active ? "Nonaktifkan" : "Aktifkan"} ${u.email}`} onClick={() => setToggle(u)}><Power className="h-4 w-4" /></Button>}
+      {u.id !== me && <Button size="sm" variant="ghost" className="text-destructive" aria-label={`Hapus ${u.email}`} onClick={() => setDel(u)}><Trash2 className="h-4 w-4" /></Button>}
     </div>
   );
 
@@ -109,6 +111,7 @@ function Page() {
       </main>
       <EditDialog user={edit} self={edit?.id === me} taken={taken} onClose={() => setEdit(null)} onSaved={refresh} />
       <PasswordDialog user={pw} onClose={() => setPw(null)} />
+      <DeleteDialog user={del} onClose={() => setDel(null)} onDeleted={refresh} />
       <ConfirmDialog open={!!toggle} onOpenChange={(o) => !o && setToggle(null)} busy={toggling} destructive={!!toggle?.active}
         title={toggle?.active ? "Nonaktifkan akun?" : "Aktifkan kembali akun?"}
         description={toggle?.active ? `${toggle.email} tidak akan bisa masuk dan sesi yang sedang berjalan diakhiri. Data yang sudah dibuat tetap tersimpan.` : `${toggle?.email ?? ""} dapat masuk kembali dengan password terakhirnya.`}
@@ -164,6 +167,45 @@ function PasswordDialog({ user, onClose }: { user: ManagedUser | null; onClose: 
           <Input aria-label="Password baru (min. 10 karakter)" placeholder="Password baru (min. 10 karakter)" type="password" required minLength={10} maxLength={72} value={pw} onChange={(e) => setPw(e.target.value)} />
           {err && <p role="alert" className="break-words rounded bg-danger-soft px-3 py-2 text-xs text-destructive">{err}</p>}
           <DialogFooter><Button type="button" variant="outline" onClick={onClose} disabled={busy}>Batal</Button><Button type="submit" disabled={busy}>{busy ? "Menyimpan..." : "Simpan Password"}</Button></DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const DELETE_WORD = "HAPUS";
+
+function DeleteDialog({ user, onClose, onDeleted }: { user: ManagedUser | null; onClose: () => void; onDeleted: () => void }) {
+  const [word, setWord] = useState("");
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const close = () => { if (busy) return; setWord(""); setErr(null); onClose(); };
+  const confirm = async (e: React.FormEvent) => {
+    e.preventDefault(); if (!user || word.trim().toUpperCase() !== DELETE_WORD) return;
+    setBusy(true); setErr(null);
+    try {
+      await deleteUser(user.id);
+      toast.success(`Akun ${user.email} dihapus permanen`);
+      setWord(""); onDeleted(); onClose();
+    } catch (e) { setErr(errMsg(e)); } finally { setBusy(false); }
+  };
+  return (
+    <Dialog open={!!user} onOpenChange={(o) => !o && close()}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Hapus akun permanen?</DialogTitle></DialogHeader>
+        <form onSubmit={confirm} className="space-y-3">
+          <div role="alert" className="flex gap-2 rounded border border-destructive/40 bg-danger-soft px-3 py-2 text-sm text-destructive">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            <div className="space-y-1 [overflow-wrap:anywhere]">
+              <p className="font-semibold">Peringatan: tindakan ini tidak dapat dibatalkan.</p>
+              <p>Akun <b>{user?.full_name || user?.email}</b> ({user?.email}) akan dihapus dari sistem login. Pengguna langsung keluar dan tidak bisa masuk lagi.</p>
+              <p>Transaksi, laporan, dan Packing List yang pernah dibuat akun ini tetap tersimpan.</p>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">Jika hanya ingin memblokir sementara, gunakan tombol nonaktifkan. Ketik <b>{DELETE_WORD}</b> untuk melanjutkan.</p>
+          <Input aria-label={`Ketik ${DELETE_WORD} untuk konfirmasi`} placeholder={DELETE_WORD} autoComplete="off" value={word} onChange={(e) => setWord(e.target.value)} className="text-base sm:text-sm" />
+          {err && <p role="alert" className="break-words rounded bg-danger-soft px-3 py-2 text-xs text-destructive">{err}</p>}
+          <DialogFooter><Button type="button" variant="outline" onClick={close} disabled={busy}>Batal</Button><Button type="submit" variant="destructive" disabled={busy || word.trim().toUpperCase() !== DELETE_WORD}>{busy ? "Menghapus..." : "Ya, hapus akun"}</Button></DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

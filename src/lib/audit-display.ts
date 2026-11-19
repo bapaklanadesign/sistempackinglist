@@ -18,6 +18,7 @@ export const auditActivity: Record<string, string> = {
   create_account: "Menambah rekening", update_account: "Mengubah rekening", delete_account: "Menghapus rekening",
   user_create: "Membuat akun pengguna", user_update: "Mengubah akun pengguna", user_disable: "Menonaktifkan akun",
   user_enable: "Mengaktifkan akun", user_reset_password: "Reset password akun",
+  user_delete: "Menghapus akun pengguna",
 };
 const review: Record<string, string> = { unchecked: "Belum Diperiksa", match: "Cocok", mismatch: "Tidak Cocok" };
 function values(data: unknown): Values {

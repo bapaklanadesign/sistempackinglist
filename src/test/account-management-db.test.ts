@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 const db = new PGlite({ extensions: { pgcrypto } });
-const migrations = ["20261118154418_1332630d-763d-4994-b11a-e8b9739c8c30.sql", "20261118160437_ac60b9a9-95bf-4979-9450-aa373b0e28bb.sql"]
+const migrations = ["20261118154418_1332630d-763d-4994-b11a-e8b9739c8c30.sql", "20261118160437_ac60b9a9-95bf-4979-9450-aa373b0e28bb.sql", "20261119174620_2d873889-728e-41f5-a7bd-119c64b6b85d.sql"]
   .map((f) => readFileSync(`supabase/migrations/${f}`, "utf8"));
 
 const base = `
@@ -143,6 +143,30 @@ describe("account management rules", () => {
     await as(null);
     expect(await one("select setup_status() open")).toEqual({ open: false });
     await expect(db.query("select bootstrap_super_admin('new@mr.test', $1, 'New')", [PW])).rejects.toThrow("Penyiapan awal ditutup");
+  });
+
+  it.each(["a1", "pk"] as const)("refuses account deletion by non-Super Admin (%s)", async (who) => {
+    await as(ids[who]);
+    await expect(db.query("select admin_delete_user($1)", [ids.sup])).rejects.toThrow("Hanya Super Admin");
+    await db.exec("reset role");
+    expect(await one("select count(*)::int n from auth.users where id = $1", [ids.sup])).toEqual({ n: 1 });
+  });
+
+  it("stops Super Admin from deleting own account", async () => {
+    await as(ids.sup);
+    await expect(db.query("select admin_delete_user($1)", [ids.sup])).rejects.toThrow("tidak dapat menghapus akun sendiri");
+  });
+
+  it("deleting an account removes login, sessions, profile and role, and logs it", async () => {
+    await db.exec("reset role");
+    const s = await one<{ id: string }>("insert into auth.sessions (user_id) values ($1) returning id", [ids.pk]);
+    await db.query("insert into auth.refresh_tokens (user_id, session_id) values ($1, $2)", [ids.pk, s.id]);
+    await as(ids.sup);
+    await db.query("select admin_delete_user($1)", [ids.pk]);
+    await db.exec("reset role");
+    expect(await one("select (select count(*)::int from auth.users where id = $1) users, (select count(*)::int from auth.identities where user_id = $1) idents, (select count(*)::int from auth.sessions where user_id = $1) sessions, (select count(*)::int from auth.refresh_tokens where user_id = $1::text) tokens, (select count(*)::int from profiles where id = $1) profiles, (select count(*)::int from user_roles where user_id = $1) roles", [ids.pk]))
+      .toEqual({ users: 0, idents: 0, sessions: 0, tokens: 0, profiles: 0, roles: 0 });
+    expect(await one("select before_data->>'email' email, before_data->>'role' role from audit_logs where action = 'user_delete'")).toEqual({ email: "packing@mr.test", role: "admin_packing" });
   });
 
   it("lists accounts only for Super Admin", async () => {

@@ -75,3 +75,9 @@ export async function resetUserPassword(id: string, password: string) {
   const { error } = await supabase.rpc("admin_reset_password", { _user_id: id, _password: password });
   if (error) throw new Error(error.message);
 }
+
+/** Super Admin: permanently delete an account (cannot sign in again; its records stay). */
+export async function deleteUser(id: string) {
+  const { error } = await supabase.rpc("admin_delete_user", { _user_id: id });
+  if (error) throw new Error(error.message);
+}

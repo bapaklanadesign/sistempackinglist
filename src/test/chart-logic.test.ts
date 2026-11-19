@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LOOP_MS, balanceTrend, bucketKey, changePct, formatAnimated, loopProgress, mtdTrend, periodBuckets, rangeStart, seriesBy } from "@/lib/chart-logic";
+import { LOOP, LOOP_MS, balanceTrend, bucketKey, changePct, formatAnimated, loopProgress, mtdTrend, periodBuckets, rangeStart, seriesBy } from "@/lib/chart-logic";
 import { destinationTotals } from "@/lib/packing-logic";
 
 describe("period filter (hari, minggu, bulan, tahun)", () => {
@@ -43,9 +43,13 @@ describe("trend up/down", () => {
 });
 
 describe("looping counter 0 → value → 0", () => {
-  it("takes between 3 and 5 seconds per loop", () => {
-    expect(LOOP_MS).toBeGreaterThanOrEqual(3000);
-    expect(LOOP_MS).toBeLessThanOrEqual(5000);
+  it("holds the exact value for 10 seconds, then counts back down and rests", () => {
+    expect(LOOP.hold).toBe(10_000);
+    expect(LOOP_MS).toBe(13_100);
+    expect(loopProgress(1800 + 5_000)).toBe(1);
+    expect(loopProgress(1800 + 10_000 - 1)).toBe(1);
+    expect(loopProgress(1800 + 10_000 + 450)).toBe(0.5);
+    expect(loopProgress(LOOP_MS - 1)).toBe(0);
   });
   it("starts at 0, reaches the value, returns to 0 and repeats", () => {
     expect(loopProgress(0)).toBe(0);

@@ -44,6 +44,7 @@
 - [x] Glass stat cards with looping 0 → value counters (Rupiah, kg, koli, m³) and up/down trend vs last month on Dashboard Utama, Laporan, Laporan Packing, Barang and Manifest
 - [x] Gradient glowing line/area charts with day/week/month/year filter, gradient bar charts, spinning donut charts with centre percentage; all from existing database rows
 - [x] Pause animations off-screen, on hidden tabs and for reduced motion; 112 tests passed
+- [x] Hold the counted value for 10 seconds before easing back to 0 (13.1 s per loop); 138 tests passed and one full loop traced in the browser
 - [ ] View the signed-in dashboards with real data on phone and desktop — automated sign-in unavailable for this external Supabase project
 
 ## Static SPA + Firebase Hosting migration

@@ -130,8 +130,8 @@ export function shortAxis(n: number) {
   return fmtNum(n, 1);
 }
 
-/** Looping counter: count up, hold the real value, ease back to 0, short rest — 4.4 s per loop. */
-export const LOOP = { up: 1800, hold: 1300, down: 900, rest: 400 } as const;
+/** Looping counter: count up, hold the real value for 10 s, ease back to 0, short rest — 13.1 s per loop. */
+export const LOOP = { up: 1800, hold: 10_000, down: 900, rest: 400 } as const;
 export const LOOP_MS = LOOP.up + LOOP.hold + LOOP.down + LOOP.rest;
 const easeOutCubic = (x: number) => 1 - (1 - x) ** 3;
 const easeInOutCubic = (x: number) => (x < 0.5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2);

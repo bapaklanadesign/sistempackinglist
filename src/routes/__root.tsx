@@ -7,9 +7,11 @@ import {
   HeadContent,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
 
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { isChunkLoadError } from "../lib/chunk-load-error";
 import { AuthProvider } from "../lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteShell } from "@/components/site/site-chrome";
@@ -35,34 +37,62 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
+  const chunkError = isChunkLoadError(error);
+  const [reloading, setReloading] = useState(false);
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+    reportLovableError(error, {
+      boundary: "tanstack_root_error_component",
+      kind: chunkError ? "chunk_load" : "render",
+    });
+  }, [error, chunkError]);
+
+  const retry = () => {
+    setReloading(true);
+    if (chunkError) {
+      // The browser holds a stale module list; only a full reload fetches the new files.
+      window.location.reload();
+      return;
+    }
+    router.invalidate();
+    reset();
+    setReloading(false);
+  };
+
+  const Icon = chunkError ? WifiOff : AlertTriangle;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+      <div
+        role="alert"
+        aria-live="assertive"
+        className="w-full max-w-md rounded-xl border border-border bg-card p-6 text-center shadow-sm"
+      >
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+          <Icon className="h-6 w-6" aria-hidden="true" />
+        </div>
+        <h1 className="mt-4 text-xl font-semibold tracking-tight text-card-foreground">
+          {chunkError ? "Halaman gagal dimuat" : "Terjadi kesalahan"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          {chunkError
+            ? "Sebagian file halaman tidak berhasil diunduh. Biasanya karena koneksi terputus atau aplikasi baru saja diperbarui. Muat ulang halaman untuk mengambil versi terbaru."
+            : "Halaman ini tidak dapat ditampilkan. Silakan coba lagi atau kembali ke beranda."}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            type="button"
+            onClick={retry}
+            disabled={reloading}
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-70"
           >
-            Try again
+            <RefreshCw className={`h-4 w-4 ${reloading ? "animate-spin" : ""}`} aria-hidden="true" />
+            {chunkError ? "Muat ulang halaman" : "Coba lagi"}
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
-            Go home
+            Kembali ke Beranda
           </a>
         </div>
       </div>

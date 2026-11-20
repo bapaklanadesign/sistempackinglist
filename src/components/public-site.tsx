@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState, type FormEvent } from "react";
-import { Anchor, ArrowRight, Boxes, Clock3, Container, Eye, FileCheck2, Handshake, MapPin, MessageCircle, Package, PackageCheck, Phone, Ship, ShipWheel, Shirt, Store, Target, Truck, Wrench, Sofa, Laptop } from "lucide-react";
+import { Anchor, ArrowRight, ArrowUpRight, Boxes, Clock3, Container, Eye, Facebook, FileCheck2, Handshake, Instagram, MapPin, MapPinned, MessageCircle, Music2, Package, PackageCheck, Phone, Ship, ShipWheel, Shirt, Store, Target, Truck, Wrench, Sofa, Laptop } from "lucide-react";
 import kapal from "@/assets/kapal-foto.jpg";
 import kontainer from "@/assets/kontainer-foto.jpg";
 import ship from "@/assets/pelni-ship.webp.asset.json";
@@ -9,7 +9,9 @@ import { RouteMap } from "@/components/journey/route-map";
 import { CtaBand, PageHero, SectionHead, SiteShell, useReveal, wa } from "@/components/site/site-chrome";
 import { AdvantageGrid } from "@/components/site/site-content";
 import { journeyFrames } from "@/lib/journey-frames";
-import { destinations, originPort, regions, whatsappDisplay, whatsappInquiryUrl, whatsappRouteUrl, whatsappUrl } from "@/lib/public-shipping";
+import { destinations, originPort, regions, socialLinks, whatsappDisplay, whatsappInquiryUrl, whatsappRouteUrl, whatsappUrl } from "@/lib/public-shipping";
+
+const socialIcons = { Facebook, Instagram, TikTok: Music2, Google: MapPinned };
 
 type Page = "services" | "routes" | "about" | "contact";
 
@@ -146,7 +148,20 @@ function Contact() {
         <div className="j-card s-contact j-rv"><MapPin strokeWidth={1.6} aria-hidden="true" /><h3>LOKASI</h3><p className="s-contact-big">{originPort.city}, {originPort.region}</p><p>Keberangkatan dari {originPort.port}.</p></div>
       </div>
     </div></section>
-    <section className="j-sec j-ocean"><div className="j-wrap s-contact-grid">
+    <section className="j-sec j-ocean" aria-labelledby="social-title"><div className="j-wrap">
+      <SectionHead eyebrow="Media Sosial" title={<span id="social-title">Terhubung dengan <em>kami.</em></span>} lead="Ikuti kabar, layanan, dan informasi terbaru CV MR EXPRESS melalui kanal resmi kami." />
+      <div className="s-social-grid">{socialLinks.map(({ name, handle, url }, i) => {
+        const Icon = socialIcons[name];
+        return <a key={name} className="j-card s-contact s-social j-rv" href={url} target="_blank" rel="noopener noreferrer" style={{ transitionDelay: `${i * 70}ms` }} aria-label={`${name} CV MR EXPRESS (terbuka di tab baru)`}>
+          <Icon strokeWidth={1.6} aria-hidden="true" />
+          <h3>{name.toUpperCase()}</h3>
+          <p className="s-contact-big">{handle}</p>
+          <p>{name === "Google" ? "Lihat profil kami di Google." : `Kunjungi ${name} resmi kami.`}</p>
+          <span className="s-social-link">Buka {name}<ArrowUpRight aria-hidden="true" /></span>
+        </a>;
+      })}</div>
+    </div></section>
+    <section className="j-sec"><div className="j-wrap s-contact-grid">
       <form className="s-form j-rv" onSubmit={submit} aria-labelledby="form-title">
         <p className="j-eyebrow">Formulir Pengiriman</p>
         <h2 id="form-title">Kirim pertanyaan<br /><em>via WhatsApp.</em></h2>

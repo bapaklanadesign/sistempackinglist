@@ -1,5 +1,11 @@
 export const whatsappUrl = "https://wa.me/6282336829960";
 export const whatsappDisplay = "0823 3682 9960";
+export const socialLinks = [
+  { name: "Facebook", handle: "cvmrexpress", url: "https://www.facebook.com/cvmrexpress" },
+  { name: "Instagram", handle: "@cvmrexpress7", url: "https://www.instagram.com/cvmrexpress7?evlk=MXczaDJqa3pxaDQ5dQ==" },
+  { name: "TikTok", handle: "@cvmrexpress7", url: "https://www.tiktok.com/@cvmrexpress7?_r=1&_t=ZS-9BYTigHlPJo" },
+  { name: "Google", handle: "CV MR EXPRESS", url: "https://share.google/nyp9vRMK6vsn8Isrl" },
+] as const;
 export const originPort = { city: "Surabaya", port: "Pelabuhan Tanjung Perak", region: "Jawa Timur" };
 /** Estimates (days) come from the supplied service info; ports are the PELNI calling ports of each city. */
 export const destinations = [

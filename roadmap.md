@@ -59,3 +59,5 @@
 - [x] Tested all four roles in the browser with temporary QA accounts (now deactivated)
 - [x] Separate dashboards per role; Super Admin module switcher without re-login
 - [ ] Remove the 4 deactivated QA accounts (qa-*@mrexpress.test) — awaiting user approval to delete
+- [x] Super Admin: Dashboard Pembukuan + Dashboard Packing List merged into one Dashboard Utama with section jump bar and tidied layout; verified desktop and 344px.
+- [x] Manajemen Pengguna: permanent account delete with warning (Super Admin only).

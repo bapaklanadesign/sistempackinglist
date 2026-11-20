@@ -234,7 +234,7 @@ function SuperDash({ bal, counts, recent }: { bal: ReturnType<typeof useQuery<Ba
     <>
       <PageHeader title="Dashboard Utama" subtitle="Super Admin · Pembukuan & Packing List" />
       <main className="dash-canvas min-w-0 space-y-6 p-3 sm:p-6">
-        <DashHero title="Dashboard Super Admin" subtitle="Pembukuan Admin Laporan 1 & 2 dan seluruh Packing List dalam satu halaman" />
+        <DashHero eyebrow="CV MR EXPRESS" title="Dashboard Super Admin" subtitle="Pembukuan Admin Laporan 1 & 2 dan seluruh Packing List dalam satu halaman" />
         <JumpNav />
 
         <section id="bagian-pembukuan" aria-labelledby="bagian-pembukuan-judul" className="min-w-0 scroll-mt-20 space-y-4">

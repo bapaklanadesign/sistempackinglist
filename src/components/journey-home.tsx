@@ -5,6 +5,7 @@ import { whatsappDisplay } from "@/lib/public-shipping";
 import { SiteFooter, SiteNav, wa } from "@/components/site/site-chrome";
 import { AdvantageGrid } from "@/components/site/site-content";
 import { RouteMap } from "@/components/journey/route-map";
+import { SwarmIntro } from "@/components/swarm/swarm-intro";
 
 /** Smooth eased scroll to an in-page section, offset for the fixed navbar. */
 function goTo(selector: string) {
@@ -114,6 +115,7 @@ export function JourneyHome() {
     </main>
 
     <div className="j-hud" aria-hidden="true"><i ref={hudBar} /><span ref={hudNum}>01 · Hero</span></div>
+    <SwarmIntro root={root} />
     <div className="j-loader" aria-hidden="true"><span>Memuat perjalanan…</span></div>
   </div>;
 }
